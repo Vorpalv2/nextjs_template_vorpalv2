@@ -1,7 +1,7 @@
 {
   "name": "create-nextjs-vorpalv2",
-  "version": "0.1.0",
-  "description": "An interactive Next.js starter with composable database, auth, email and AI integrations.",
+  "version": "0.1.1",
+  "description": "Interactive CLI for creating a Next.js app with optional auth, database, AI, email, themes, and route scaffolding.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Vorpalv2/nextjs_template_vorpalv2.git"

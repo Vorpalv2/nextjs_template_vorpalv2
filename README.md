@@ -1,6 +1,6 @@
 # create-nextjs-vorpalv2
 
-An interactive Next.js project generator. Choose your stack, appearance and font; get a small working application with polished starter screens and connected integrations.
+Interactive CLI for creating a Next.js app with optional auth, database, AI, email, themes, and route scaffolding. Choose your stack, appearance, and font to get a working application with polished starter screens.
 
 ```sh
 npx create-nextjs-vorpalv2@latest my-app
