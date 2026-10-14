@@ -1,0 +1,55 @@
+{
+  "name": "create-nextjs-vorpalv2",
+  "version": "0.1.0",
+  "description": "An interactive Next.js starter with composable database, auth, email and AI integrations.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vorpalv2/nextjs_template_vorpalv2.git"
+  },
+  "homepage": "https://github.com/Vorpalv2/nextjs_template_vorpalv2#readme",
+  "bugs": "https://github.com/Vorpalv2/nextjs_template_vorpalv2/issues",
+  "type": "module",
+  "bin": {
+    "create-nextjs-vorpalv2": "dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsup src/cli.ts src/index.ts --format esm --clean && tsc -p tsconfig.build.json",
+    "dev": "node --import tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@clack/prompts": "1.8.1",
+    "prettier": "3.9.10",
+    "semver": "7.8.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@ai-sdk/anthropic": "4.0.79",
+    "@ai-sdk/google": "4.0.95",
+    "@ai-sdk/openai": "4.0.93",
+    "@ai-sdk/react": "4.0.143",
+    "@types/node": "26.6.5",
+    "@types/semver": "7.8.0",
+    "@typescript/typescript6": "6.0.2",
+    "ai": "7.0.140",
+    "tsup": "9.0.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "ui-boundary-helper": "0.1.2"
+  },
+  "license": "MIT"
+}
