@@ -1,6 +1,6 @@
 {
   "name": "create-nextjs-vorpalv2",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Interactive CLI for creating a Next.js app with optional auth, database, AI, email, themes, and route scaffolding.",
   "repository": {
     "type": "git",

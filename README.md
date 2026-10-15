@@ -17,12 +17,14 @@ node dist/cli.js my-app
 ## Choices
 
 - Website, web app, or AI app starter
-- Supabase, Neon, or no database
+- Supabase, Neon, SQLite, MongoDB, or no database
+- Drizzle or Prisma for Neon and SQLite; MongoDB driver or Prisma for MongoDB
 - Supabase Auth, Better Auth, Clerk, or no auth (compatible choices only)
 - TanStack Query
 - Resend and React Email templates
 - AI SDK with AI Gateway, OpenAI, Anthropic, or Google; optional private conversation persistence
-- shadcn styles, colors, corner radius, or an official preset code
+- Optional shadcn, Aceternity UI, both, or neither; Aceternity includes a Layout Text Flip example
+- shadcn styles, colors, corner radius, or an official preset code when UI is selected
 - System/light/dark theme; dual mode includes a persistent reusable theme toggle
 - Geist, Inter, custom Google font, local font, or system font
 - npm, pnpm, yarn, or bun
@@ -40,6 +42,10 @@ Dependencies resolve to the latest non-prerelease, non-deprecated stable npm rel
 | None | None or Clerk |
 | Supabase | None, Supabase Auth, or Clerk |
 | Neon | None, Better Auth, or Clerk |
+| SQLite | None, Better Auth, or Clerk |
+| MongoDB | None, Better Auth, or Clerk |
+
+Supabase uses its native client. Neon and SQLite offer Drizzle or Prisma. MongoDB offers its native driver or Prisma. Prisma for MongoDB is pinned to the latest compatible 6.x release because Prisma 7 does not yet support MongoDB. Other selected packages use the latest compatible stable releases.
 
 Database-only configurations include connection modules but use browser-local records in the example. Private cloud-backed CRUD requires both a database and auth. Persisted AI conversations require AI, a database and auth.
 
@@ -58,7 +64,7 @@ src/
   database/                    # connections, schema, data access, migrations
   ai/                          # model and example tool definitions
   email/                       # sender helper and React Email templates
-  components/ui/               # editable official shadcn components
+  components/ui/               # editable UI components; registry components when selected
   hooks/
   fonts/
 ```
@@ -117,7 +123,11 @@ Example configuration:
 }
 ```
 
-`--no-install` skips dependency installation and preset application. The generated project is usable after installing dependencies; run `npm run setup:ui` to apply the chosen official shadcn style/preset. Custom Google font names must be supported by `next/font/google`. Local font paths are copied into the generated project.
+`--no-install` skips dependency installation and UI registry setup. The generated project is usable after installing dependencies; run `npm run setup:ui` when you chose shadcn or Aceternity UI. The Aceternity selection installs Layout Text Flip and provides an `/effects` example. Custom Google font names must be supported by `next/font/google`. Local font paths are copied into the generated project.
+
+For SQLite or Neon, configure `DATABASE_URL`, then run `npm run db:generate` and `npm run db:migrate`. MongoDB with Prisma uses `db:migrate` to run `prisma db push`. Better Auth on Neon or SQLite also needs `npm run auth:migrate`. Each generated README gives the commands for its selected stack.
+
+The GitHub Packages copy is available as `@vorpalv2/create-nextjs-vorpalv2` from `https://npm.pkg.github.com`. The unscoped npm package remains the default `npx` entry point.
 
 ## Development
 

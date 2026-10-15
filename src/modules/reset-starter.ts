@@ -3,6 +3,7 @@ import type {Config,Files} from '../config.js';
 // Only these generator-owned files may be removed by the generated reset command.
 export const resetRemovals = [
   'src/app/(marketing)/setup/page.tsx',
+  'src/app/(marketing)/effects/page.tsx',
   'src/app/(app)/dashboard/page.tsx',
   'src/app/(app)/chat/page.tsx',
   'src/app/(app)/email/page.tsx',

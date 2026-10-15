@@ -14,7 +14,20 @@ const versions=(names:string[])=>Object.fromEntries(names.map(n=>[n,'1.0.0']));
 function render(input:unknown){const c=configSchema.parse(input);const deps=dependencies(c);return renderProject(c,versions([...deps.prod,...deps.dev]));}
 
 test('rejects incompatible provider selections',()=>{
- for(const input of [{database:'neon',auth:'supabase'},{database:'supabase',auth:'better-auth'},{persistence:true},{ai:'gateway',database:'neon',persistence:true},{git:false,github:'https://github.com/user/repo'},{github:'https://token@github.com/user/repo'}])assert.throws(()=>configSchema.parse({name:'example',...input}));
+ for(const input of [{database:'neon',auth:'supabase'},{database:'supabase',auth:'better-auth'},{database:'mongodb',orm:'drizzle'},{database:'sqlite',orm:'native'},{database:'supabase',orm:'prisma'},{persistence:true},{ai:'gateway',database:'neon',persistence:true},{git:false,github:'https://github.com/user/repo'},{github:'https://token@github.com/user/repo'}])assert.throws(()=>configSchema.parse({name:'example',...input}));
+});
+test('database and UI choices include only compatible code and packages',()=>{
+ for(const [database,orm,driver] of [['sqlite','drizzle','@libsql/client'],['sqlite','prisma','@prisma/adapter-better-sqlite3'],['mongodb','native','mongodb'],['mongodb','prisma','@prisma/client'],['neon','prisma','@prisma/adapter-pg']] as const){
+  const f=render({name:'example',database,orm,auth:'better-auth',ui:'none'});const p=JSON.parse(f['package.json']);
+  assert.ok(p.dependencies[driver],`${database}/${orm}: missing ${driver}`);
+  assert.equal(p.scripts['setup:ui'],undefined);assert.equal(f['components.json'],undefined);
+  assert.equal(p.dependencies['radix-ui'],undefined);assert.equal(p.dependencies['class-variance-authority'],undefined);
+  assert.ok(f['src/database/server.ts']);assert.match(f['README.md'],new RegExp(`- ORM: ${orm}`));
+ }
+ const effects=render({name:'example',ui:'aceternity'});const p=JSON.parse(effects['package.json']);
+ assert.ok(p.dependencies.motion);assert.equal(p.dependencies['radix-ui'],undefined);
+ assert.match(effects['scripts/setup-ui.mjs'],/@aceternity\/layout-text-flip/);
+ assert.match(effects['src/app/(marketing)/effects/page.tsx'],/LayoutTextFlip/);
 });
 test('only selected dependencies and env vars are included',()=>{
  const f=render({name:'example',database:'neon',auth:'better-auth',email:'resend',ai:'openai',query:true});const p=JSON.parse(f['package.json']);
@@ -33,7 +46,7 @@ test('ownership checks are present for both database backends',()=>{
  for(const database of ['supabase','neon']){const f=render({name:'example',database,auth:'clerk',ai:'gateway',persistence:true});assert.match(f['src/app/api/records/route.ts'],/requireUser/);assert.match(f['src/app/api/chat/route.ts'],/requireUser/);assert.match(f['src/database/records.ts'],/owner/);assert.match(f['src/database/conversations.ts'],/owner/);if(database==='supabase'){assert.match(f['supabase/migrations/0001_workspace.sql'],/enable row level security/);assert.match(f['supabase/migrations/0001_workspace.sql'],/with check/);assert.match(f['src/database/server.ts'],/getToken/);}}
 });
 test('all supported selections produce parseable source and internal imports resolve',async()=>{
- const stacks=[['none','none'],['none','clerk'],['supabase','none'],['supabase','supabase'],['supabase','clerk'],['neon','none'],['neon','better-auth'],['neon','clerk']];
+ const stacks=[['none','none'],['none','clerk'],['supabase','none'],['supabase','supabase'],['supabase','clerk'],['neon','none'],['neon','better-auth'],['neon','clerk'],['sqlite','none'],['sqlite','better-auth'],['sqlite','clerk'],['mongodb','none'],['mongodb','better-auth'],['mongodb','clerk']];
  for(const[database,auth]of stacks)for(const theme of ['light','dark','system']){
  const f=render({name:'example',database,auth,theme,query:true,ai:'gateway',email:'resend',persistence:database!=='none'&&auth!=='none',font:'system'});
  for(const[name,content]of Object.entries(f)){

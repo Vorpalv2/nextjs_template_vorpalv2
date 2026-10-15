@@ -1,7 +1,9 @@
 import { type Config, type Files } from '../config.js';
+import {alternativeDatabase} from './database-extra.js';
 export function database(c: Config): Files {
  const f:Files = {};
  if(c.database === 'none') { f['src/database/.gitkeep']=''; return f; }
+ const alternative=alternativeDatabase(c);if(alternative)return alternative;
  if(c.database === 'supabase') {
  f['src/database/server.ts'] = c.auth === 'supabase' ? `import 'server-only';
 import {createServerClient} from '@supabase/ssr';

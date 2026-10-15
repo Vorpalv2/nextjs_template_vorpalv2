@@ -33,13 +33,15 @@ export function AccountMenu(){return process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_K
 `;
  } else {
  if(c.auth==='better-auth') {
+ const dbImport=c.database==='sqlite'?"import Database from 'better-sqlite3';":c.database==='mongodb'?"import {MongoClient} from 'mongodb';\nimport {mongodbAdapter} from '@better-auth/mongo-adapter';":"import {Pool} from 'pg';";
+ const dbExpression=c.database==='sqlite'?"new Database(required('DATABASE_URL').replace(/^file:/,''))":c.database==='mongodb'?"mongodbAdapter(new MongoClient(required('DATABASE_URL')).db())":"new Pool({connectionString:required('DATABASE_URL')})";
  f['src/auth/config.ts']=`import 'server-only';
 import {betterAuth} from 'better-auth';
 import {nextCookies} from 'better-auth/next-js';
-import {Pool} from 'pg';
+${dbImport}
 import {required} from '@/lib/env';
 ${c.email==='resend' ? "import {sendEmail} from '@/email/send';\nimport {AccountEmail} from '@/email/templates/account';" : ''}
-function createAuth(){return betterAuth({database:new Pool({connectionString:required('DATABASE_URL')}),secret:required('BETTER_AUTH_SECRET'),baseURL:required('BETTER_AUTH_URL'),emailAndPassword:{enabled:true,${c.email==='resend' ? "sendResetPassword:async({user,url})=>{await sendEmail({to:user.email,subject:'Reset your password',react:AccountEmail({title:'A fresh start.',url,label:'Reset password'})});}," : ''}},${c.email==='resend' ? "emailVerification:{sendVerificationEmail:async({user,url})=>{await sendEmail({to:user.email,subject:'Verify your email',react:AccountEmail({title:'Welcome aboard.',url,label:'Verify email'})});}}," : ''}rateLimit:{enabled:true,storage:'database'},plugins:[nextCookies()]});}
+function createAuth(){return betterAuth({database:${dbExpression},secret:required('BETTER_AUTH_SECRET'),baseURL:required('BETTER_AUTH_URL'),emailAndPassword:{enabled:true,${c.email==='resend' ? "sendResetPassword:async({user,url})=>{await sendEmail({to:user.email,subject:'Reset your password',react:AccountEmail({title:'A fresh start.',url,label:'Reset password'})});}," : ''}},${c.email==='resend' ? "emailVerification:{sendVerificationEmail:async({user,url})=>{await sendEmail({to:user.email,subject:'Verify your email',react:AccountEmail({title:'Welcome aboard.',url,label:'Verify email'})});}}," : ''}rateLimit:{enabled:true,storage:'database'},plugins:[nextCookies()]});}
 let instance:ReturnType<typeof createAuth>|undefined;
 export function getAuth(){return instance??=createAuth();}
 `;
@@ -51,11 +53,11 @@ export async function GET(request:Request){try{return toNextJsHandler(getAuth())
 export async function POST(request:Request){try{return toNextJsHandler(getAuth()).POST(request);}catch(e){return failure(e);}}
 `;
  // The auth CLI reads this module after .env.local is loaded by the migration script.
- f['src/auth/migrate.ts']=`import {config} from 'dotenv';
+ if(c.database!=='mongodb')f['src/auth/migrate.ts']=`import {config} from 'dotenv';
 import {betterAuth} from 'better-auth';
-import {Pool} from 'pg';
+${dbImport}
 config({path:'.env.local'});
-export const auth=betterAuth({database:new Pool({connectionString:process.env.DATABASE_URL}),secret:process.env.BETTER_AUTH_SECRET,baseURL:process.env.BETTER_AUTH_URL,emailAndPassword:{enabled:true},rateLimit:{enabled:true,storage:'database'}});
+export const auth=betterAuth({database:${c.database==='sqlite'?"new Database((process.env.DATABASE_URL??'file:./dev.db').replace(/^file:/,''))":"new Pool({connectionString:process.env.DATABASE_URL})"},secret:process.env.BETTER_AUTH_SECRET,baseURL:process.env.BETTER_AUTH_URL,emailAndPassword:{enabled:true},rateLimit:{enabled:true,storage:'database'}});
 `;
  } else {
  f['src/proxy.ts']=`import {createServerClient} from '@supabase/ssr';
