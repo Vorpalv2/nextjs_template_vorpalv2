@@ -1,0 +1,31 @@
+name: Publish GitHub Package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://npm.pkg.github.com
+          scope: '@vorpalv2'
+      - run: npm ci
+      - run: npm run check
+      - name: Prepare scoped package
+        run: |
+          npm pack --silent --pack-destination "$RUNNER_TEMP"
+          mkdir -p "$RUNNER_TEMP/github-package"
+          tar -xzf "$RUNNER_TEMP/create-nextjs-vorpalv2-$(node -p 'require("./package.json").version').tgz" -C "$RUNNER_TEMP/github-package" --strip-components=1
+          node -e 'const fs=require("fs");const file=process.env.RUNNER_TEMP+"/github-package/package.json";const pkg=JSON.parse(fs.readFileSync(file,"utf8"));pkg.name="@vorpalv2/create-nextjs-vorpalv2";delete pkg.scripts.prepack;pkg.publishConfig={registry:"https://npm.pkg.github.com"};fs.writeFileSync(file,JSON.stringify(pkg,null,2)+"\n")'
+      - name: Publish scoped package
+        run: npm publish "$RUNNER_TEMP/github-package"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
